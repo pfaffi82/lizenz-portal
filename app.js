@@ -175,6 +175,7 @@
 
   function abmelden() {
     try { sessionStorage.removeItem(SITZUNG); } catch (e) { /* egal */ }
+    Speicher.sitzungZugang(null);
     schluessel = {};
     daten = null;
     letztesErgebnis = null;
@@ -188,10 +189,9 @@
       zeige(`<div class="karte"><h1>Browser zu alt</h1><p class="unter">Dieser Browser kann keine Ed25519-Signaturen. Bitte aktuelles Chrome, Edge, Firefox oder Safari verwenden.</p></div>`);
       return;
     }
-    if (!Speicher.geraet()) return seiteGeraet();
     let gespeichert = null;
     try { gespeichert = JSON.parse(sessionStorage.getItem(SITZUNG)); } catch (e) { /* keine Sitzung */ }
-    if (gespeichert && Object.keys(gespeichert).length) {
+    if (gespeichert && Object.keys(gespeichert).length && Speicher.geraet()) {
       try {
         daten = await Speicher.laden();
         if (daten && daten.tresor) {
@@ -233,7 +233,7 @@
           <ol class="klein" style="padding-left:18px">
             <li>Auf GitHub anmelden, dann <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained token erstellen</a> öffnen.</li>
             <li>Name „Lizenz-Portal“, Ablauf z. B. 1 Jahr.</li>
-            <li>Repository access: <b>Only select repositories</b> → <code>${esc(g.repo || STANDARD_REPO)}</code>.</li>
+            <li>Repository access: <b>Only select repositories</b> → <code>${esc(g.repo || STANDARD_REPO)}</code> <b>und</b> <code>${esc(Speicher.PORTAL_REPO)}</code>.</li>
             <li>Permissions → Repository permissions → <b>Contents: Read and write</b>.</li>
             <li>„Generate token“, den Token kopieren und hier einfügen. Im Passwort-Manager ablegen.</li>
           </ol></details>
@@ -245,18 +245,29 @@
       </form>`));
   }
 
-  function seiteAnmelden() {
-    const g = Speicher.geraet();
+  async function seiteAnmelden() {
+    const fest = Speicher.istFestesGeraet() ? Speicher.geraet() : null;
+    const zugang = fest ? null : await Speicher.ladeZugang();
+    if (!fest && !zugang) {
+      zeige(logoKarte(`
+        <h1>Lizenz-Portal</h1>
+        <p class="unter">Die Anmeldung mit Benutzer und Passwort ist noch nicht eingerichtet.</p>
+        <p class="klein">Einmalig: mit einem GitHub-Token einrichten, dann unter Einstellungen „Anmeldung mit Benutzer + Passwort“ aktivieren.</p>
+        <p style="margin-bottom:0"><button type="button" style="width:100%" data-klick="geraet-neu">Einmalig mit GitHub-Token einrichten</button></p>`));
+      return;
+    }
     zeige(logoKarte(`
       <h1>Lizenz-Portal</h1>
-      <p class="unter">Angemeldet als <b>${esc(g.name)}</b> · Daten in <code>${esc(g.repo)}</code></p>
+      <p class="unter">${fest ? `Dieses Gerät ist eingerichtet für <b>${esc(fest.name)}</b>.` : "Bitte anmelden."}</p>
       <form data-aktion="anmelden">
+        ${fest ? "" : `<label for="benutzer">Benutzer</label>
+        <input id="benutzer" name="benutzer" autocomplete="username" required autocapitalize="none">`}
         <label for="passwort">Passwort</label>
-        <input id="passwort" name="passwort" type="password" autocomplete="current-password" required autofocus>
+        <input id="passwort" name="passwort" type="password" autocomplete="current-password" required>
         <p style="margin-top:24px"><button style="width:100%" id="anmelde-knopf">Anmelden</button></p>
       </form>
-      <p class="klein" style="margin-bottom:0"><a href="#" data-klick="geraet-neu">Gerät neu einrichten (anderer Token oder Name)</a></p>`));
-    setTimeout(() => $("#passwort")?.focus(), 50);
+      <p class="klein" style="margin-bottom:0"><a href="#" data-klick="geraet-neu">Mit GitHub-Token einrichten</a></p>`));
+    setTimeout(() => $(fest ? "#passwort" : "#benutzer")?.focus(), 50);
   }
 
   function seiteErsteinrichtung(hatDaten) {
@@ -289,6 +300,15 @@
   aktionen.anmelden = async (w) => {
     $("#anmelde-knopf").textContent = "Prüfe …";
     try {
+      if (!Speicher.istFestesGeraet()) {
+        const zugang = await Speicher.ladeZugang();
+        const name = (w.benutzer || "").toLowerCase();
+        const eintrag = zugang?.benutzer?.[name];
+        if (!eintrag) throw new LF("Benutzer oder Passwort falsch.");
+        let z;
+        try { z = await Krypto.tresorOeffnen(eintrag, w.passwort); } catch (e) { throw new LF("Benutzer oder Passwort falsch."); }
+        Speicher.sitzungZugang({ name, token: z.token, repo: z.repo });
+      }
       daten = await Speicher.laden();
       if (!daten || !daten.tresor) return seiteErsteinrichtung(!!daten);
       schluessel = await Krypto.tresorOeffnen(daten.tresor, w.passwort);
@@ -760,6 +780,18 @@ E&P Solutions IT GmbH`;
           <p style="margin-bottom:0;margin-top:20px"><button>Passwort ändern</button></p>
         </form>
       </div>
+      <div class="karte" style="max-width:520px">
+        <h2>Anmeldung mit Benutzer + Passwort</h2>
+        <p class="klein">Danach kann man sich auf jedem Gerät nur mit Benutzer und Passwort anmelden, ohne GitHub-Token.
+          Der Token wird dafür mit dem Passwort verschlüsselt auf der Portal-Seite abgelegt. Das Passwort muss das Portal-Passwort sein.
+          Ein starkes Passwort ist wichtig.</p>
+        <p class="klein" id="zugang-liste">Eingerichtete Benutzer: wird geladen …</p>
+        <form data-aktion="zugang">
+          <label for="z_name">Benutzer</label><input id="z_name" name="z_name" value="admin" required pattern="[A-Za-z0-9._-]{2,40}" autocapitalize="none">
+          <label for="z_pw">Portal-Passwort</label><input id="z_pw" name="z_pw" type="password" required autocomplete="current-password">
+          <p style="margin-bottom:0;margin-top:20px"><button>Benutzer speichern</button></p>
+        </form>
+      </div>
       <div class="karte">
         <h2>Dieses Gerät</h2>
         <p class="klein">Name: <b>${esc(g.name)}</b> · Daten-Repo: <code>${esc(g.repo)}</code></p>
@@ -769,7 +801,26 @@ E&P Solutions IT GmbH`;
           <span style="flex:0 0 auto"><button type="button" class="gefahr" data-klick="geraet-vergessen">Gerät abmelden und Token löschen</button></span>
         </p>
       </div>`);
+    zugangListe();
   }
+
+  async function zugangListe() {
+    const z = await Speicher.ladeZugang();
+    const el = $("#zugang-liste");
+    if (el) el.textContent = "Eingerichtete Benutzer: " + (z && Object.keys(z.benutzer || {}).length ? Object.keys(z.benutzer).join(", ") : "noch keine");
+  }
+
+  aktionen.zugang = async (w) => {
+    const name = w.z_name.toLowerCase();
+    if (!/^[a-z0-9._-]{2,40}$/.test(name)) throw new LF("Benutzer: 2–40 Zeichen, a–z, 0–9, . _ -");
+    await Krypto.tresorOeffnen(daten.tresor, w.z_pw);  // muss das Portal-Passwort sein
+    const g = Speicher.geraet();
+    const zugang = (await Speicher.ladeZugang()) || { benutzer: {} };
+    zugang.benutzer = zugang.benutzer || {};
+    zugang.benutzer[name] = await Krypto.tresorSchliessen({ token: g.token, repo: g.repo }, w.z_pw);
+    await Speicher.zugangSpeichern(zugang);
+    meldung(`Anmeldung für „${name}“ eingerichtet. In etwa 1–2 Minuten auf allen Geräten aktiv.`);
+  };
 
   aktionen.pflicht = async (w) => {
     const liste = Object.keys(PFLICHT_FELDER).filter((f) => w["p_" + f]);
@@ -782,6 +833,12 @@ E&P Solutions IT GmbH`;
     const inhalt = await Krypto.tresorOeffnen(daten.tresor, w.alt);
     const tresor = await Krypto.tresorSchliessen(inhalt, w.neu);
     await aendern((d) => { d.tresor = tresor; }, "Passwort geändert");
+    const zugang = await Speicher.ladeZugang();
+    if (zugang?.benutzer && Object.keys(zugang.benutzer).length) {
+      const g = Speicher.geraet();
+      for (const n of Object.keys(zugang.benutzer)) zugang.benutzer[n] = await Krypto.tresorSchliessen({ token: g.token, repo: g.repo }, w.neu);
+      await Speicher.zugangSpeichern(zugang);
+    }
     meldung("Passwort geändert. Ab jetzt mit dem neuen Passwort anmelden.");
     seiteEinstellungen();
   };

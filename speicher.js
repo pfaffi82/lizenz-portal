@@ -5,11 +5,51 @@
 
 const Speicher = (() => {
   const GERAET = "eps-lizenz-geraet";
+  const SITZUNG_ZUGANG = "eps-lizenz-zugang";
   const DATEI = "daten.json";
+  const PORTAL_REPO = "pfaffi82/lizenz-portal";  // hier liegt zugang.json (öffentlich, nur verschlüsselt)
   let sha = null;
 
+  /** Zugang dieses Geräts (fest eingerichtet) oder dieser Sitzung (per Benutzer + Passwort). */
   function geraet() {
-    try { return JSON.parse(localStorage.getItem(GERAET)) || null; } catch (e) { return null; }
+    try {
+      return JSON.parse(localStorage.getItem(GERAET)) || JSON.parse(sessionStorage.getItem(SITZUNG_ZUGANG)) || null;
+    } catch (e) { return null; }
+  }
+
+  function istFestesGeraet() {
+    try { return !!localStorage.getItem(GERAET); } catch (e) { return false; }
+  }
+
+  function sitzungZugang(werte) {
+    try {
+      if (werte) sessionStorage.setItem(SITZUNG_ZUGANG, JSON.stringify(werte));
+      else sessionStorage.removeItem(SITZUNG_ZUGANG);
+    } catch (e) { /* egal */ }
+  }
+
+  /** zugang.json von der eigenen Seite: { benutzer: { name: Tresor mit {token, repo} } } */
+  async function ladeZugang() {
+    try {
+      const r = await fetch(`zugang.json?t=${Date.now()}`, { cache: "no-store" });
+      return r.ok ? await r.json() : null;
+    } catch (e) { return null; }
+  }
+
+  /** Schreibt zugang.json ins Portal-Repo (GitHub Pages veröffentlicht es nach ca. 1 Minute). */
+  async function zugangSpeichern(zugang) {
+    const g = geraet();
+    const url = `https://api.github.com/repos/${PORTAL_REPO}/contents/zugang.json`;
+    const kopf = { Authorization: `Bearer ${g.token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+    const alt = await fetch(url, { headers: kopf, cache: "no-store" });
+    const altSha = alt.ok ? (await alt.json()).sha : undefined;
+    const r = await fetch(url, {
+      method: "PUT",
+      headers: { ...kopf, "Content-Type": "application/json" },
+      body: JSON.stringify({ message: "Lizenz-Portal: Anmeldedaten aktualisiert", content: utf8ZuB64(JSON.stringify(zugang, null, 1)), ...(altSha ? { sha: altSha } : {}) }),
+    });
+    if (r.status === 403 || r.status === 404) throw new Error(`Token darf ${PORTAL_REPO} nicht beschreiben. Beim Token auch dieses Repo mit „Contents: Read and write“ freigeben.`);
+    if (!r.ok) throw new Error(`Speichern fehlgeschlagen (GitHub-Fehler ${r.status}).`);
   }
 
   function geraetSpeichern(werte) {
@@ -75,5 +115,6 @@ const Speicher = (() => {
     sha = (await r.json()).content.sha;
   }
 
-  return { geraet, geraetSpeichern, geraetVergessen, laden, speichern };
+  return { geraet, istFestesGeraet, sitzungZugang, geraetSpeichern, geraetVergessen, laden, speichern,
+           ladeZugang, zugangSpeichern, PORTAL_REPO };
 })();

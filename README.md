@@ -13,8 +13,9 @@ Lizenzschlüssel für E&P-Module (goai, BMD, …) ausstellen und verwalten — d
 
 ## Anmelden
 
-1. Einmal pro Gerät: Name + GitHub-Token (Fine-grained, nur das Daten-Repo, „Contents: Read and write“).
-2. Danach: Portal-Passwort.
+1. Normal: Benutzer (z. B. `admin`) + Portal-Passwort. Der GitHub-Token liegt dafür verschlüsselt in `zugang.json`.
+   Einmalige Einrichtung: „Mit GitHub-Token einrichten“ (Fine-grained, Repos `eps-lizenz-daten` + `lizenz-portal`, „Contents: Read and write“), dann Einstellungen → „Anmeldung mit Benutzer + Passwort“.
+2. Das Passwort schützt Token und Schlüssel — deshalb ein starkes Passwort verwenden.
 
 Wer nur die Adresse kennt, kommt ohne Token und Passwort an nichts heran.
 
