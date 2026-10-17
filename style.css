@@ -1,0 +1,106 @@
+  :root {
+    --navy:#0B1F4D; --blau:#2563EB; --cyan:#22D3EE; --ink:#111418;
+    --grau-d:#4B5563; --grau-m:#94A3B8; --linie:#E2E8F0; --flaeche:#F4F6FA; --weiss:#FFFFFF;
+    --verlauf:linear-gradient(90deg, var(--navy) 0%, var(--blau) 60%, var(--cyan) 100%);
+    /* Ampel — nur für Status, nicht als Gestaltungsfarbe */
+    --ok:#047857; --ok-bg:#ECFDF5; --warn:#B45309; --warn-bg:#FFFBEB; --err:#B91C1C; --err-bg:#FEF2F2;
+  }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; font-family:"DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif; font-weight:400;
+         background:var(--flaeche); color:var(--ink); line-height:1.5; min-height:100vh; display:flex; flex-direction:column; }
+  a { color:var(--blau); }
+  .verlauf { height:4px; background:var(--verlauf); }
+
+  header { background:var(--navy); color:var(--weiss); }
+  header .innen { max-width:1040px; margin:0 auto; padding:14px 16px; display:flex; gap:24px; align-items:center; flex-wrap:wrap; }
+  header .logo { height:34px; display:block; }
+  header .titel { font-weight:500; color:var(--grau-m); border-left:1px solid #ffffff33; padding-left:16px; margin-right:auto; }
+  header nav { display:flex; gap:4px; flex-wrap:wrap; }
+  header nav a { color:#ffffffcc; text-decoration:none; font-weight:500; padding:6px 12px; border-radius:6px; }
+  header nav a:hover { color:var(--weiss); background:#ffffff14; }
+  header nav a.aktiv { color:var(--weiss); background:#ffffff1f; box-shadow:inset 0 -2px 0 var(--cyan); }
+  header form { margin:0; }
+  header .wer { background:none; border:1px solid #ffffff40; color:#ffffffcc; padding:6px 12px; font-weight:500; font-size:14px; }
+  header .wer-box { display:flex; gap:10px; align-items:center; }
+  header .wer-name { color:#ffffffcc; font-weight:500; font-size:14px; text-decoration:none; }
+  header a.wer-name:hover { color:var(--weiss); text-decoration:underline; }
+  header .wer:hover { color:var(--weiss); border-color:var(--cyan); background:none; }
+
+  main { width:100%; max-width:1040px; margin:28px auto; padding:0 16px; flex:1; }
+  footer { color:var(--grau-m); font-size:13px; text-align:center; padding:20px 16px 28px; }
+
+  .karte { background:var(--weiss); border:1px solid var(--linie); border-radius:12px; padding:24px; margin-bottom:20px;
+           box-shadow:0 1px 2px rgba(11,31,77,.04); }
+  .karte.hervor { border-top:4px solid transparent; border-image:var(--verlauf) 1; border-image-slice:1 0 0 0; }
+  h1 { font-weight:800; font-size:24px; color:var(--navy); margin:0 0 4px; letter-spacing:-.01em; }
+  h2 { font-weight:700; font-size:17px; color:var(--navy); margin:0 0 12px; }
+  .unter { color:var(--grau-d); margin:0 0 20px; }
+  label { display:block; font-weight:500; font-size:14px; color:var(--navy); margin:16px 0 6px; }
+  label small, .klein { font-weight:400; color:var(--grau-d); font-size:13px; }
+  input, textarea, select { width:100%; padding:10px 12px; border:1px solid #CBD5E1; border-radius:8px; font:inherit;
+                            color:var(--ink); background:var(--weiss); }
+  input:focus, textarea:focus, select:focus { outline:none; border-color:var(--blau); box-shadow:0 0 0 3px #2563EB26; }
+  textarea { font-family:ui-monospace, "SF Mono", Menlo, monospace; font-size:13px; }
+  .reihe { display:flex; gap:16px; flex-wrap:wrap; } .reihe > * { flex:1; min-width:200px; }
+
+  button, .knopf { display:inline-block; background:var(--blau); color:var(--weiss); border:0; border-radius:8px;
+                   padding:11px 20px; font:inherit; font-weight:700; cursor:pointer; text-decoration:none; }
+  button:hover, .knopf:hover { background:#1D4ED8; }
+  button.zweit, .knopf.zweit { background:var(--weiss); color:var(--blau); border:1px solid var(--blau); padding:9px 16px; font-weight:500; }
+  button.zweit:hover, .knopf.zweit:hover { background:#EFF6FF; }
+
+  /* Laufzeit-Kacheln */
+  .kacheln { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:8px; }
+  .kacheln input { position:absolute; opacity:0; width:1px; height:1px; }
+  .kacheln label { margin:0; border:1px solid #CBD5E1; border-radius:8px; padding:10px 12px; cursor:pointer; font-weight:500; text-align:center; }
+  .kacheln label:hover { border-color:var(--blau); }
+  .kacheln input:checked + label { border-color:var(--blau); background:#EFF6FF; color:var(--blau); box-shadow:inset 0 0 0 1px var(--blau); }
+  .kacheln input:focus-visible + label { box-shadow:0 0 0 3px #2563EB40; }
+  .segment { display:inline-flex; border:1px solid #CBD5E1; border-radius:8px; overflow:hidden; }
+  .segment input { position:absolute; opacity:0; width:1px; height:1px; }
+  .segment label { margin:0; padding:8px 16px; cursor:pointer; font-weight:500; border-right:1px solid #CBD5E1; }
+  .segment label:last-of-type { border-right:0; }
+  .segment input:checked + label { background:var(--navy); color:var(--weiss); }
+
+  .schluessel { font-family:ui-monospace, "SF Mono", Menlo, monospace; font-size:13px; word-break:break-all;
+                background:var(--flaeche); border:1px dashed var(--blau); border-radius:8px; padding:14px; color:var(--ink); }
+  .kundentext { white-space:pre-wrap; background:var(--flaeche); border-radius:8px; padding:14px; font-size:14px; }
+  .meldung { padding:12px 16px; border-radius:8px; margin-bottom:16px; font-weight:500; }
+  .fehler { background:var(--err-bg); color:var(--err); border:1px solid #FECACA; }
+  .ok { background:var(--ok-bg); color:var(--ok); border:1px solid #A7F3D0; }
+
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--linie); vertical-align:top; }
+  th { color:var(--grau-d); font-weight:500; font-size:13px; text-transform:uppercase; letter-spacing:.04em; }
+  tr:hover td { background:#F8FAFC; }
+  .tabelle { overflow-x:auto; }
+  .pille { display:inline-block; padding:2px 10px; border-radius:99px; font-size:12px; font-weight:700; white-space:nowrap; }
+  .pille.gueltig { background:var(--ok-bg); color:var(--ok); }
+  .pille.bald { background:var(--warn-bg); color:var(--warn); }
+  .pille.abgelaufen { background:var(--err-bg); color:var(--err); }
+  .pille.art { background:#EFF6FF; color:var(--blau); }
+  .pille.art.test { background:#F1F5F9; color:var(--grau-d); }
+  .pille.art.intern { background:var(--navy); color:var(--weiss); }
+  details summary { cursor:pointer; color:var(--blau); font-weight:500; }
+  .kennzahlen { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-bottom:20px; }
+  .kennzahl { background:var(--weiss); border:1px solid var(--linie); border-radius:12px; padding:16px; }
+  .kennzahl b { display:block; font-size:28px; font-weight:800; color:var(--navy); line-height:1.1; }
+  .kennzahl span { color:var(--grau-d); font-size:13px; }
+  .kennzahl.warn b { color:var(--warn); }
+  button.gefahr, .knopf.gefahr { background:var(--weiss); color:var(--err); border:1px solid #FECACA; padding:9px 16px; font-weight:500; }
+  button.gefahr:hover { background:var(--err-bg); }
+  button.gefahr.voll { background:var(--err); color:var(--weiss); border-color:var(--err); }
+  button.gefahr.voll:hover { background:#991B1B; }
+  button.klein-k { padding:5px 10px; font-size:13px; }
+  .raster { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0 16px; }
+  .pflicht::after { content:" *"; color:var(--err); }
+  .check { display:flex; gap:10px; align-items:center; font-weight:400; margin:10px 0; }
+  .check input { width:auto; }
+  code { background:var(--flaeche); padding:1px 6px; border-radius:4px; font-size:13px; }
+  pre { background:var(--navy); color:#E2E8F0; padding:16px; border-radius:8px; overflow-x:auto; font-size:13px; line-height:1.5; }
+  dialog { border:0; border-radius:12px; padding:0; max-width:440px; width:calc(100% - 32px); box-shadow:0 20px 50px rgba(11,31,77,.3); }
+  dialog::backdrop { background:rgba(11,31,77,.55); }
+  dialog .dlg { padding:24px; border-top:4px solid var(--err); }
+  dialog h2 { margin-bottom:8px; }
+  dialog .knoepfe { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }

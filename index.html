@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; connect-src 'self' https://api.github.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; script-src 'self'; base-uri 'none'; form-action 'none'">
+<title>Lizenz-Portal · E&amp;P Solutions</title>
+<link rel="icon" href="assets/favicon-32.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="verlauf"></div>
+<header id="kopf" hidden>
+  <div class="innen">
+    <a href="#/"><img class="logo" src="assets/horizontal-full-color-on-dark.svg" alt="E&amp;P Solutions"></a>
+    <span class="titel">Lizenz-Portal</span>
+    <nav id="nav">
+      <a href="#/" data-seite="ausstellen">Ausstellen</a>
+      <a href="#/kunden" data-seite="kunden">Kunden</a>
+      <a href="#/lizenzen" data-seite="lizenzen">Lizenzen</a>
+      <a href="#/pruefen" data-seite="pruefen">Prüfen</a>
+      <a href="#/module" data-seite="module">Module</a>
+      <a href="#/einstellungen" data-seite="einstellungen">Einstellungen</a>
+    </nav>
+    <div class="wer-box">
+      <span class="wer-name" id="wer"></span>
+      <button class="wer" id="abmelden" type="button">Abmelden</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div id="meldungen"></div>
+  <div id="inhalt"><div class="karte"><p class="klein">Lädt …</p></div></div>
+</main>
+<footer>E&amp;P Solutions IT GmbH · interne Anwendung · nicht weitergeben</footer>
+
+<dialog id="bestaetigen">
+  <div class="dlg">
+    <h2 id="b-titel">Wirklich löschen?</h2>
+    <p id="b-text" class="klein" style="font-size:14px;margin:0"></p>
+    <div class="knoepfe">
+      <button type="button" class="zweit" id="b-nein">Abbrechen</button>
+      <button type="button" class="gefahr voll" id="b-ja">OK, löschen</button>
+    </div>
+  </div>
+</dialog>
+
+<script src="krypto.js"></script>
+<script src="speicher.js"></script>
+<script src="entwickler.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
